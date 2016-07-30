@@ -26,10 +26,11 @@ function f:PLAYER_LOGIN()
 	f.PLAYER_LOGIN = nil
 	
 	f:RegisterEvent("UNIT_HEALTH")
-	f:RegisterEvent("UNIT_MANA")
-
+	f:RegisterEvent("UNIT_POWER")
+	
 	local ver = tonumber(GetAddOnMetadata("xanSoundAlerts","Version")) or 'Unknown'
-	DEFAULT_CHAT_FRAME:AddMessage("|xanSoundAlerts|r [v|cFFDF2B2B"..ver.."|r] loaded.")
+	DEFAULT_CHAT_FRAME:AddMessage("|cFF99CC33xanSoundAlerts|r [v|cFFDF2B2B"..ver.."|r] loaded.")
+	
 end
 
 function f:UNIT_HEALTH()
@@ -43,7 +44,7 @@ function f:UNIT_HEALTH()
 	end
 end
 
-function f:UNIT_MANA()
+function f:UNIT_POWER()
 	if ((UnitPower("player") / UnitPowerMax("player")) <= lowManaThreshold) then
 		if (not lowMana) then
 			PlaySoundFile("Interface\\AddOns\\xanSoundAlerts\\sounds\\LowMana.ogg", "Master")
