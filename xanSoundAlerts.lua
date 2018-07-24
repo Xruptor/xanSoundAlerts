@@ -26,7 +26,7 @@ function f:PLAYER_LOGIN()
 	f.PLAYER_LOGIN = nil
 	
 	f:RegisterEvent("UNIT_HEALTH")
-	f:RegisterEvent("UNIT_POWER")
+	f:RegisterEvent("UNIT_POWER_UPDATE")
 	
 	local ver = tonumber(GetAddOnMetadata("xanSoundAlerts","Version")) or 'Unknown'
 	DEFAULT_CHAT_FRAME:AddMessage("|cFF99CC33xanSoundAlerts|r [v|cFFDF2B2B"..ver.."|r] loaded.")
@@ -66,7 +66,7 @@ end
 -- SPELL_POWER_PAIN            18      "PAIN"
 
 --only worry about mana, don't care about special power types really for now
-function f:UNIT_POWER()
+function f:UNIT_POWER_UPDATE()
 	if ((UnitPower("player", SPELL_POWER_MANA) / UnitPowerMax("player", SPELL_POWER_MANA)) <= lowManaThreshold) then
 		if (not lowMana) then
 			PlaySoundFile("Interface\\AddOns\\xanSoundAlerts\\sounds\\LowMana.ogg", "Master")
