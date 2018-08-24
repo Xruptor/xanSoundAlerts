@@ -16,6 +16,8 @@ local lowMana = true
 local lowHealthThreshold = 0.35 --set the percentage threshold for low health
 local lowManaThreshold = 0.35 --set the percentage threshold for low mana
 
+local ignoreClass = false
+
 ----------------------
 --      Enable      --
 ----------------------
@@ -29,11 +31,16 @@ function f:PLAYER_LOGIN()
 	f:RegisterEvent("UNIT_POWER_UPDATE")
 	
 	local ver = tonumber(GetAddOnMetadata("xanSoundAlerts","Version")) or 'Unknown'
-	DEFAULT_CHAT_FRAME:AddMessage("|cFF99CC33xanSoundAlerts|r [v|cFFDF2B2B"..ver.."|r] loaded.")
+	DEFAULT_CHAT_FRAME:AddMessage("|cFF99CC33xanSoundAlerts|r [v|cFF20ff20"..ver.."|r] loaded.")
+	
+	if UnitClass("player") ~= "Warlock" then
+		ignoreClass = true
+	end
 	
 end
 
 function f:UNIT_HEALTH()
+	if ignoreClass then return end
 	if ((UnitHealth("player") / UnitHealthMax("player")) <= lowHealthThreshold) then
 		if (not lowHealth) then
 			PlaySoundFile("Interface\\AddOns\\xanSoundAlerts\\sounds\\LowHealth.ogg", "Master")
@@ -67,6 +74,7 @@ end
 
 --only worry about mana, don't care about special power types really for now
 function f:UNIT_POWER_UPDATE()
+	if ignoreClass then return end
 	if ((UnitPower("player", SPELL_POWER_MANA) / UnitPowerMax("player", SPELL_POWER_MANA)) <= lowManaThreshold) then
 		if (not lowMana) then
 			PlaySoundFile("Interface\\AddOns\\xanSoundAlerts\\sounds\\LowMana.ogg", "Master")
