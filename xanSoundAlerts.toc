@@ -1,8 +1,8 @@
-## Interface: 80000
+## Interface: 80300
 ## Title: xanSoundAlerts
 ## Notes: Plays a sound when your health or mana is low.
 ## Author: Xruptor
-## Version: 1.3
+## Version: 1.4
 ## X-Curse-Project-ID: 299032
 ## X-WoWI-ID: 24732
 ## OptionalDeps: tekDebug
