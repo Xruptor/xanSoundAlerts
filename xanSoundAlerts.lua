@@ -13,6 +13,8 @@ local function Debug(...)
     if debugf then debugf:AddMessage(string.join(", ", tostringall(...))) end
 end
 
+local IsRetail = WOW_PROJECT_ID == WOW_PROJECT_MAINLINE
+
 --only play the sound once during low health/mana then reset
 local lowHealth = false
 local lowMana = true
@@ -165,20 +167,21 @@ function addon:UNIT_POWER_UPDATE(event, unit, powerType)
 		end
 	end
 	
-	if not powerType or not addon.allowedOtherTypes[powerType] then return end
-	
-	if XanSA_DB["allow"..powerType] and UnitPower("player", addon.powerTypes[powerType]) > 0 then
-		if ((UnitPower("player", addon.powerTypes[powerType]) / UnitPowerMax("player", addon.powerTypes[powerType])) <= lowOtherThreshold) then
-			if (not addon.soundAlertSwitch[powerType]) then
-				PlaySoundFile("Interface\\AddOns\\xanSoundAlerts\\sounds\\LowMana.ogg", "Master")
-				addon.soundAlertSwitch[powerType] = true
-				return
+	if IsRetail then
+		if not powerType or not addon.allowedOtherTypes[powerType] then return end
+		
+		if XanSA_DB["allow"..powerType] and UnitPower("player", addon.powerTypes[powerType]) > 0 then
+			if ((UnitPower("player", addon.powerTypes[powerType]) / UnitPowerMax("player", addon.powerTypes[powerType])) <= lowOtherThreshold) then
+				if (not addon.soundAlertSwitch[powerType]) then
+					PlaySoundFile("Interface\\AddOns\\xanSoundAlerts\\sounds\\LowMana.ogg", "Master")
+					addon.soundAlertSwitch[powerType] = true
+					return
+				end
+			else
+				addon.soundAlertSwitch[powerType] = false
 			end
-		else
-			addon.soundAlertSwitch[powerType] = false
 		end
 	end
-	
 end
 
 if IsLoggedIn() then addon:PLAYER_LOGIN() else addon:RegisterEvent("PLAYER_LOGIN") end

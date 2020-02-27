@@ -9,6 +9,7 @@ local configEvent = addon.configEvent
 configEvent:SetScript("OnEvent", function(self, event, ...) if self[event] then return self[event](self, event, ...) end end)
 
 local L = LibStub("AceLocale-3.0"):GetLocale(ADDON_NAME)
+local IsRetail = WOW_PROJECT_ID == WOW_PROJECT_MAINLINE
 
 local lastObject
 local function addConfigEntry(objEntry, adjustX, adjustY)
@@ -181,30 +182,32 @@ function configEvent:PLAYER_LOGIN()
 	addConfigEntry(btnMana, 0, -20)
 	addon.aboutPanel.btnMana = btnMana
 	
-	for i=1, table.getn(addon.orderIndex) do
-		local k = addon.orderIndex[i]
-	
-		addon.aboutPanel["btn"..k] = createCheckbutton(addon.aboutPanel, string.format(L.ChkBtnOtherInfo, _G[k] ))
-		local btnTemp = addon.aboutPanel["btn"..k]
+	if IsRetail then
+		for i=1, table.getn(addon.orderIndex) do
+			local k = addon.orderIndex[i]
 		
-		btnTemp:SetScript("OnShow", function() btnTemp:SetChecked(XanSA_DB["allow"..k]) end)
-		btnTemp.func = function(slashSwitch)
-			local value = XanSA_DB["allow"..k]
-			if not slashSwitch then value = btnTemp:GetChecked() end
+			addon.aboutPanel["btn"..k] = createCheckbutton(addon.aboutPanel, string.format(L.ChkBtnOtherInfo, _G[k] ))
+			local btnTemp = addon.aboutPanel["btn"..k]
+			
+			btnTemp:SetScript("OnShow", function() btnTemp:SetChecked(XanSA_DB["allow"..k]) end)
+			btnTemp.func = function(slashSwitch)
+				local value = XanSA_DB["allow"..k]
+				if not slashSwitch then value = btnTemp:GetChecked() end
 
-			if value then
-				XanSA_DB["allow"..k] = false
-				DEFAULT_CHAT_FRAME:AddMessage(string.format(L.ChkBtnOtherOff, _G[k] ))
-			else
-				XanSA_DB["allow"..k] = true
-				DEFAULT_CHAT_FRAME:AddMessage(string.format(L.ChkBtnOtherOn, _G[k] ))
+				if value then
+					XanSA_DB["allow"..k] = false
+					DEFAULT_CHAT_FRAME:AddMessage(string.format(L.ChkBtnOtherOff, _G[k] ))
+				else
+					XanSA_DB["allow"..k] = true
+					DEFAULT_CHAT_FRAME:AddMessage(string.format(L.ChkBtnOtherOn, _G[k] ))
+				end
 			end
+			btnTemp:SetScript("OnClick", btnTemp.func)
+			
+			addConfigEntry(btnTemp, 0, -20)
 		end
-		btnTemp:SetScript("OnClick", btnTemp.func)
-		
-		addConfigEntry(btnTemp, 0, -20)
 	end
-
+	
 	configEvent:UnregisterEvent("PLAYER_LOGIN")
 end
 
