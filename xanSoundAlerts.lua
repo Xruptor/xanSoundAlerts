@@ -90,8 +90,14 @@ function addon:PLAYER_LOGIN()
 	addon:RegisterEvent("UNIT_HEALTH")
 	addon:RegisterEvent("UNIT_POWER_UPDATE")
 	
+	SLASH_XANSOUNDALERTS1 = "/xsa";
+	SlashCmdList["XANSOUNDALERTS"] = function()
+		InterfaceOptionsFrame:Show() --has to be here to load the about frame onLoad
+		InterfaceOptionsFrame_OpenToCategory(addon.aboutPanel) --force the panel to show
+	end
+	
 	local ver = GetAddOnMetadata(ADDON_NAME,"Version") or '1.0'
-	DEFAULT_CHAT_FRAME:AddMessage(string.format("|cFF99CC33%s|r [v|cFF20ff20%s|r] loaded.", ADDON_NAME, ver or "1.0"))
+	DEFAULT_CHAT_FRAME:AddMessage(string.format("|cFF99CC33%s|r [v|cFF20ff20%s|r] loaded:   /xsa", ADDON_NAME, ver or "1.0"))
 	
 end
 
