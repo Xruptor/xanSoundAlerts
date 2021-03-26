@@ -147,7 +147,7 @@ function configFrame:EnableConfig()
 	btnHealth:SetScript("OnShow", function() btnHealth:SetChecked(XanSA_DB.allowHealth) end)
 	btnHealth.func = function(slashSwitch)
 		local value = XanSA_DB.allowHealth
-		if not slashSwitch then value = btnHealth:GetChecked() end
+		if not slashSwitch then value = XanSA_DB.allowHealth end
 
 		if value then
 			XanSA_DB.allowHealth = false
@@ -166,7 +166,7 @@ function configFrame:EnableConfig()
 	btnMana:SetScript("OnShow", function() btnMana:SetChecked(XanSA_DB.allowMana) end)
 	btnMana.func = function(slashSwitch)
 		local value = XanSA_DB.allowMana
-		if not slashSwitch then value = btnMana:GetChecked() end
+		if not slashSwitch then value = XanSA_DB.allowMana end
 
 		if value then
 			XanSA_DB.allowMana = false
@@ -191,7 +191,7 @@ function configFrame:EnableConfig()
 			btnTemp:SetScript("OnShow", function() btnTemp:SetChecked(XanSA_DB["allow"..k]) end)
 			btnTemp.func = function(slashSwitch)
 				local value = XanSA_DB["allow"..k]
-				if not slashSwitch then value = btnTemp:GetChecked() end
+				if not slashSwitch then value = XanSA_DB["allow"..k] end
 
 				if value then
 					XanSA_DB["allow"..k] = false
