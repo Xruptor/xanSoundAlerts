@@ -184,26 +184,31 @@ function configFrame:EnableConfig()
 	if IsRetail then
 		for i=1, table.getn(addon.orderIndex) do
 			local k = addon.orderIndex[i]
-		
-			addon.aboutPanel["btn"..k] = createCheckbutton(addon.aboutPanel, string.format(L.ChkBtnOtherInfo, _G[k] ))
-			local btnTemp = addon.aboutPanel["btn"..k]
 			
-			btnTemp:SetScript("OnShow", function() btnTemp:SetChecked(XanSA_DB["allow"..k]) end)
-			btnTemp.func = function(slashSwitch)
-				local value = XanSA_DB["allow"..k]
-				if not slashSwitch then value = XanSA_DB["allow"..k] end
+			if k and _G[k] then
+			
+				addon.aboutPanel["btn"..k] = createCheckbutton(addon.aboutPanel, string.format(L.ChkBtnOtherInfo, _G[k] ))
+				local btnTemp = addon.aboutPanel["btn"..k]
+				
+				btnTemp:SetScript("OnShow", function() btnTemp:SetChecked(XanSA_DB["allow"..k]) end)
+				btnTemp.func = function(slashSwitch)
+					local value = XanSA_DB["allow"..k]
+					if not slashSwitch then value = XanSA_DB["allow"..k] end
 
-				if value then
-					XanSA_DB["allow"..k] = false
-					DEFAULT_CHAT_FRAME:AddMessage(string.format(L.ChkBtnOtherOff, _G[k] ))
-				else
-					XanSA_DB["allow"..k] = true
-					DEFAULT_CHAT_FRAME:AddMessage(string.format(L.ChkBtnOtherOn, _G[k] ))
+					if value then
+						XanSA_DB["allow"..k] = false
+						DEFAULT_CHAT_FRAME:AddMessage(string.format(L.ChkBtnOtherOff, _G[k] ))
+					else
+						XanSA_DB["allow"..k] = true
+						DEFAULT_CHAT_FRAME:AddMessage(string.format(L.ChkBtnOtherOn, _G[k] ))
+					end
 				end
+				btnTemp:SetScript("OnClick", btnTemp.func)
+				
+				addConfigEntry(btnTemp, 0, -20)
+				
 			end
-			btnTemp:SetScript("OnClick", btnTemp.func)
 			
-			addConfigEntry(btnTemp, 0, -20)
 		end
 	end
 
