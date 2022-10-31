@@ -109,7 +109,9 @@ function addon:EnableAddon()
 	
 	SLASH_XANSOUNDALERTS1 = "/xsa";
 	SlashCmdList["XANSOUNDALERTS"] = function()
-		InterfaceOptionsFrame:Show() --has to be here to load the about frame onLoad
+		if not IsRetail then
+			InterfaceOptionsFrame:Show() --has to be here to load the about frame onLoad
+		end
 		InterfaceOptionsFrame_OpenToCategory(addon.aboutPanel) --force the panel to show
 	end
 	
