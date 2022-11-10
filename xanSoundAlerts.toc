@@ -5,9 +5,10 @@
 ## Title: xanSoundAlerts
 ## Notes: Plays a sound when your health or mana is low.
 ## Author: Xruptor
-## Version: 2.7
+## Version: 2.8
 ## X-Curse-Project-ID: 299032
 ## X-WoWI-ID: 24732
+## X-Wago-ID: RaN0Q96j
 ## OptionalDeps: tekDebug
 ## SavedVariablesPerCharacter: XanSA_DB
 
