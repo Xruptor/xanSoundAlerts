@@ -12,32 +12,32 @@ local IsRetail = WOW_PROJECT_ID == WOW_PROJECT_MAINLINE
 
 local lastObject
 local function addConfigEntry(objEntry, adjustX, adjustY)
-	
+
 	objEntry:ClearAllPoints()
-	
+
 	if not lastObject then
 		objEntry:SetPoint("TOPLEFT", 20, -150)
 	else
 		objEntry:SetPoint("LEFT", lastObject, "BOTTOMLEFT", adjustX or 0, adjustY or -30)
 	end
-	
+
 	lastObject = objEntry
 end
 
 local chkBoxIndex = 0
 local function createCheckbutton(parentFrame, displayText)
 	chkBoxIndex = chkBoxIndex + 1
-	
+
 	local checkbutton = CreateFrame("CheckButton", ADDON_NAME.."_config_chkbtn_" .. chkBoxIndex, parentFrame, "ChatConfigCheckButtonTemplate")
 	getglobal(checkbutton:GetName() .. 'Text'):SetText(" "..displayText)
-	
+
 	return checkbutton
 end
 
 local buttonIndex = 0
 local function createButton(parentFrame, displayText)
 	buttonIndex = buttonIndex + 1
-	
+
 	local button = CreateFrame("Button", ADDON_NAME.."_config_button_" .. buttonIndex, parentFrame, "UIPanelButtonTemplate")
 	button:SetText(displayText)
 	button:SetHeight(30)
@@ -49,14 +49,14 @@ end
 local sliderIndex = 0
 local function createSlider(parentFrame, displayText, minVal, maxVal)
 	sliderIndex = sliderIndex + 1
-	
+
 	local SliderBackdrop  = {
 		bgFile = "Interface\\Buttons\\UI-SliderBar-Background",
 		edgeFile = "Interface\\Buttons\\UI-SliderBar-Border",
 		tile = true, tileSize = 8, edgeSize = 8,
 		insets = { left = 3, right = 3, top = 6, bottom = 6 }
 	}
-	
+
 	local slider = CreateFrame("Slider", ADDON_NAME.."_config_slider_" .. sliderIndex, parentFrame, BackdropTemplateMixin and "BackdropTemplate")
 	slider:SetOrientation("HORIZONTAL")
 	slider:SetHeight(15)
@@ -80,12 +80,12 @@ local function createSlider(parentFrame, displayText, minVal, maxVal)
 	local hightext = slider:CreateFontString(nil, "ARTWORK", "GameFontHighlightSmall")
 	hightext:SetPoint("TOPRIGHT", slider, "BOTTOMRIGHT", -2, 3)
 	hightext:SetText(maxVal)
-	
+
 	local currVal = slider:CreateFontString(nil, "ARTWORK", "GameFontHighlightSmall")
 	currVal:SetPoint("TOPRIGHT", slider, "BOTTOMRIGHT", 45, 12)
 	currVal:SetText('(?)')
 	slider.currVal = currVal
-	
+
 	return slider
 end
 
@@ -95,7 +95,7 @@ local function LoadAboutFrame()
 	local about = CreateFrame("Frame", ADDON_NAME.."AboutPanel", InterfaceOptionsFramePanelContainer, BackdropTemplateMixin and "BackdropTemplate")
 	about.name = ADDON_NAME
 	about:Hide()
-	
+
     local fields = {"Version", "Author"}
 	local notes = GetAddOnMetadata(ADDON_NAME, "Notes")
 
@@ -133,16 +133,16 @@ local function LoadAboutFrame()
 			anchor = title
 		end
 	end
-	
+
 	InterfaceOptions_AddCategory(about)
 
 	return about
 end
 
 function configFrame:EnableConfig()
-	
+
 	addon.aboutPanel = LoadAboutFrame()
-	
+
 	local btnHealth = createCheckbutton(addon.aboutPanel, L.ChkBtnHealthInfo)
 	btnHealth:SetScript("OnShow", function() btnHealth:SetChecked(XanSA_DB.allowHealth) end)
 	btnHealth.func = function(slashSwitch)
@@ -158,10 +158,10 @@ function configFrame:EnableConfig()
 		end
 	end
 	btnHealth:SetScript("OnClick", btnHealth.func)
-	
+
 	addConfigEntry(btnHealth, 0, -20)
 	addon.aboutPanel.btnHealth = btnHealth
-	
+
 	local btnMana = createCheckbutton(addon.aboutPanel, L.ChkBtnManaInfo)
 	btnMana:SetScript("OnShow", function() btnMana:SetChecked(XanSA_DB.allowMana) end)
 	btnMana.func = function(slashSwitch)
@@ -177,19 +177,19 @@ function configFrame:EnableConfig()
 		end
 	end
 	btnMana:SetScript("OnClick", btnMana.func)
-	
+
 	addConfigEntry(btnMana, 0, -20)
 	addon.aboutPanel.btnMana = btnMana
-	
+
 	if IsRetail then
 		for i=1, table.getn(addon.orderIndex) do
 			local k = addon.orderIndex[i]
-			
+
 			if k and _G[k] then
-			
+
 				addon.aboutPanel["btn"..k] = createCheckbutton(addon.aboutPanel, string.format(L.ChkBtnOtherInfo, _G[k] ))
 				local btnTemp = addon.aboutPanel["btn"..k]
-				
+
 				btnTemp:SetScript("OnShow", function() btnTemp:SetChecked(XanSA_DB["allow"..k]) end)
 				btnTemp.func = function(slashSwitch)
 					local value = XanSA_DB["allow"..k]
@@ -204,11 +204,11 @@ function configFrame:EnableConfig()
 					end
 				end
 				btnTemp:SetScript("OnClick", btnTemp.func)
-				
+
 				addConfigEntry(btnTemp, 0, -20)
-				
+
 			end
-			
+
 		end
 	end
 

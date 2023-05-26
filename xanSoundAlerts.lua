@@ -99,24 +99,27 @@ function addon:EnableAddon()
 	if not XanSA_DB then XanSA_DB = {} end
 	if XanSA_DB.allowHealth == nil then XanSA_DB.allowHealth = true end
 	if XanSA_DB.allowMana == nil then XanSA_DB.allowMana = true end
-	
+
 	for k, v in pairs(addon.allowedOtherTypes) do
 		if not XanSA_DB["allow"..k] then XanSA_DB["allow"..k] = false end
 	end
-	
-	addon:RegisterEvent("UNIT_HEALTH")
-	addon:RegisterEvent("UNIT_POWER_UPDATE")
-	
+
+	--have a short delay when logging in to prevent Mana and Health alerts firing prematurely
+	C_Timer.After(5, function()
+		addon:RegisterEvent("UNIT_HEALTH")
+		addon:RegisterEvent("UNIT_POWER_UPDATE")
+	end)
+
 	SLASH_XANSOUNDALERTS1 = "/xsa";
 	SlashCmdList["XANSOUNDALERTS"] = function()
-		if not IsRetail then
+		if not IsRetail and InterfaceOptionsFrame then
 			InterfaceOptionsFrame:Show() --has to be here to load the about frame onLoad
 		end
 		InterfaceOptionsFrame_OpenToCategory(addon.aboutPanel) --force the panel to show
 	end
-	
+
 	if addon.configFrame then addon.configFrame:EnableConfig() end
-	
+
 	local ver = GetAddOnMetadata(ADDON_NAME,"Version") or '1.0'
 	DEFAULT_CHAT_FRAME:AddMessage(string.format("|cFF99CC33%s|r [v|cFF20ff20%s|r] loaded:   /xsa", ADDON_NAME, ver or "1.0"))
 end
@@ -133,9 +136,7 @@ function addon:UNIT_HEALTH()
 	end
 end
 
---http://wowwiki.wikia.com/wiki/PowerType
---https://github.com/Gethe/wow-ui-source/blob/beta/FrameXML/UnitFrame.lua#L24
---https://searchcode.com/codesearch/view/264911/
+--https://wowpedia.fandom.com/wiki/Enum.PowerType
 -- SPELL_POWER_MANA            0       "MANA"
 -- SPELL_POWER_RAGE            1       "RAGE"
 -- SPELL_POWER_FOCUS           2       "FOCUS"
@@ -155,8 +156,11 @@ end
 -- SPELL_POWER_ARCANE_CHARGES  16      "ARCANE_CHARGES"
 -- SPELL_POWER_FURY            17      "FURY"
 -- SPELL_POWER_PAIN            18      "PAIN"
+-- 19	Essence	Added in 10.0.0
+-- 20	RuneBlood	Added in 10.0.0
+-- 21	RuneFrost	Added in 10.0.0
+-- 22	RuneUnholy	Added in 10.0.0
 
---https://github.com/tomrus88/BlizzardInterfaceCode/blob/46d53f88664c14d16a702c0f68c1cd215d9efd14/Interface/AddOns/Blizzard_CombatLog/Blizzard_CombatLog.lua
 -- local powerTypeToStringLookup =
 -- {
 	-- [Enum.PowerType.Mana] = MANA,
@@ -175,6 +179,7 @@ end
 	-- [Enum.PowerType.ArcaneCharges] = ARCANE_CHARGES_POWER,
 	-- [Enum.PowerType.Fury] = FURY,
 	-- [Enum.PowerType.Pain] = PAIN,
+	-- [Enum.PowerType.Essence] = POWER_TYPE_ESSENCE,
 -- };
 
 function addon:UNIT_POWER_UPDATE(event, unit, powerType)
@@ -192,10 +197,10 @@ function addon:UNIT_POWER_UPDATE(event, unit, powerType)
 			addon.soundAlertSwitch[powerType] = false
 		end
 	end
-	
+
 	if IsRetail then
 		if not powerType or not addon.allowedOtherTypes[powerType] then return end
-		
+
 		if XanSA_DB["allow"..powerType] and UnitPower("player", addon.powerTypes[powerType]) > 0 then
 			if ((UnitPower("player", addon.powerTypes[powerType]) / UnitPowerMax("player", addon.powerTypes[powerType])) <= lowOtherThreshold) then
 				if (not addon.soundAlertSwitch[powerType]) then

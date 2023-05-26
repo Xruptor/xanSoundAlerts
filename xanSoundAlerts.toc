@@ -1,11 +1,11 @@
-## Interface: 100005
-## Interface-Retail: 100005
+## Interface: 100100
+## Interface-Retail: 100100
 ## Interface-Classic: 11403
 ## Interface-Wrath: 30401
 ## Title: xanSoundAlerts
 ## Notes: Plays a sound when your health or mana is low.
 ## Author: Xruptor
-## Version: 3.0
+## Version: 3.1
 ## X-Curse-Project-ID: 299032
 ## X-WoWI-ID: 24732
 ## X-Wago-ID: RaN0Q96j
