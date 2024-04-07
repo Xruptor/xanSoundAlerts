@@ -7,7 +7,7 @@
 ## Notes: Plays a sound when your health or mana is low.
 ## Notes-zhCN: 当你的生命值或法力值较低时播放声音。
 ## Author: Xruptor
-## Version: 3.3
+## Version: 3.4
 ## IconTexture: 1769027
 ## X-Curse-Project-ID: 299032
 ## X-WoWI-ID: 24732
