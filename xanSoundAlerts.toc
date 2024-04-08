@@ -8,7 +8,7 @@
 ## Notes-zhCN: 当你的生命值和法力值较低时播放声音。
 ## Notes-zhTW: 當你的生命值和法力值較低時播放聲音。
 ## Author: Xruptor
-## Version: 3.5
+## Version: 3.6
 ## IconTexture: 1769027
 ## X-Curse-Project-ID: 299032
 ## X-WoWI-ID: 24732
