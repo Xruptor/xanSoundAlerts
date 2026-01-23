@@ -34,6 +34,45 @@ addon:SetScript("OnEvent", function(self, event, ...)
 end)
 
 local IsRetail = WOW_PROJECT_ID == WOW_PROJECT_MAINLINE
+addon.IsRetail = IsRetail
+
+local function SafeToNumber(value)
+	if type(value) == "number" then
+		return value
+	end
+
+	local ok, num = pcall(tonumber, value)
+	if ok and type(num) == "number" then
+		return num
+	end
+
+	return nil
+end
+
+local function SafeCallToNumber(fn, ...)
+	local ok, value = pcall(fn, ...)
+	if not ok then
+		return nil
+	end
+	return SafeToNumber(value)
+end
+
+function addon:GetUnitFraction(valueFn, maxFn, ...)
+	local value = SafeCallToNumber(valueFn, ...)
+	local maxValue = SafeCallToNumber(maxFn, ...)
+	if not value or not maxValue or maxValue <= 0 then
+		return nil
+	end
+	return value / maxValue
+end
+
+function addon:GetUnitHealthFraction(unit)
+	return self:GetUnitFraction(UnitHealth, UnitHealthMax, unit)
+end
+
+function addon:GetUnitPowerFraction(unit, powerTypeId)
+	return self:GetUnitFraction(UnitPower, UnitPowerMax, unit, powerTypeId)
+end
 
 --only play the sound once during low health/mana then reset
 local lowHealth = false
@@ -131,13 +170,21 @@ function addon:EnableAddon()
 
 	if addon.configFrame then addon.configFrame:EnableConfig() end
 
-	local ver = C_AddOns.GetAddOnMetadata(ADDON_NAME,"Version") or '1.0'
+	local getMeta = (C_AddOns and C_AddOns.GetAddOnMetadata) or GetAddOnMetadata
+	local ver = (getMeta and getMeta(ADDON_NAME, "Version")) or "1.0"
 	DEFAULT_CHAT_FRAME:AddMessage(string.format("|cFF99CC33%s|r [v|cFF20ff20%s|r] loaded:   /xsa", ADDON_NAME, ver or "1.0"))
 end
 
 function addon:UNIT_HEALTH()
 	if not XanSA_DB or not XanSA_DB.allowHealth then return end
-	if ((UnitHealth("player") / UnitHealthMax("player")) <= lowHealthThreshold) then
+
+	local healthPercent = addon:GetUnitHealthFraction("player")
+	if not healthPercent then
+		lowHealth = false
+		return
+	end
+
+	if (healthPercent <= lowHealthThreshold) then
 		if (not lowHealth) then
 			PlaySoundFile("Interface\\AddOns\\xanSoundAlerts\\sounds\\LowHealth.ogg", "Master")
 			lowHealth = true
@@ -198,7 +245,9 @@ function addon:UNIT_POWER_UPDATE(event, unit, powerType)
 	if unit ~= "player" then return end
 
 	if XanSA_DB.allowMana and powerType == "MANA" then
-		if ((UnitPower("player", addon.powerTypes[powerType]) / UnitPowerMax("player", addon.powerTypes[powerType])) <= lowManaThreshold) then
+		local powerTypeId = addon.powerTypes[powerType]
+		local manaPercent = powerTypeId and addon:GetUnitPowerFraction("player", powerTypeId)
+		if manaPercent and (manaPercent <= lowManaThreshold) then
 			if (not addon.soundAlertSwitch[powerType]) then
 				PlaySoundFile("Interface\\AddOns\\xanSoundAlerts\\sounds\\LowMana.ogg", "Master")
 				addon.soundAlertSwitch[powerType] = true
@@ -212,8 +261,11 @@ function addon:UNIT_POWER_UPDATE(event, unit, powerType)
 	if IsRetail then
 		if not powerType or not addon.allowedOtherTypes[powerType] then return end
 
-		if XanSA_DB["allow"..powerType] and UnitPower("player", addon.powerTypes[powerType]) > 0 then
-			if ((UnitPower("player", addon.powerTypes[powerType]) / UnitPowerMax("player", addon.powerTypes[powerType])) <= lowOtherThreshold) then
+		local powerTypeId = addon.powerTypes[powerType]
+		local current = powerTypeId and SafeCallToNumber(UnitPower, "player", powerTypeId)
+		if XanSA_DB["allow"..powerType] and current and current > 0 then
+			local powerPercent = addon:GetUnitPowerFraction("player", powerTypeId)
+			if powerPercent and (powerPercent <= lowOtherThreshold) then
 				if (not addon.soundAlertSwitch[powerType]) then
 					PlaySoundFile("Interface\\AddOns\\xanSoundAlerts\\sounds\\LowMana.ogg", "Master")
 					addon.soundAlertSwitch[powerType] = true
