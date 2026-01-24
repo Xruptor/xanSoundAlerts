@@ -36,13 +36,27 @@ end)
 local IsRetail = WOW_PROJECT_ID == WOW_PROJECT_MAINLINE
 addon.IsRetail = IsRetail
 
+local function CanAccessValue(value)
+	if type(issecretvalue) == "function" and issecretvalue(value) then
+		if type(canaccessvalue) == "function" then
+			return canaccessvalue(value)
+		end
+		return false
+	end
+	return true
+end
+
 local function SafeToNumber(value)
+	if not CanAccessValue(value) then
+		return nil
+	end
+
 	if type(value) == "number" then
 		return value
 	end
 
 	local ok, num = pcall(tonumber, value)
-	if ok and type(num) == "number" then
+	if ok and CanAccessValue(num) and type(num) == "number" then
 		return num
 	end
 
@@ -60,7 +74,7 @@ end
 function addon:GetUnitFraction(valueFn, maxFn, ...)
 	local value = SafeCallToNumber(valueFn, ...)
 	local maxValue = SafeCallToNumber(maxFn, ...)
-	if not value or not maxValue or maxValue <= 0 then
+	if type(value) ~= "number" or type(maxValue) ~= "number" or maxValue <= 0 then
 		return nil
 	end
 	return value / maxValue
