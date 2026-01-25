@@ -7,7 +7,7 @@ addon = _G[ADDON_NAME]
 addon.configFrame = CreateFrame("frame", ADDON_NAME.."_config_eventFrame", UIParent, BackdropTemplateMixin and "BackdropTemplate")
 local configFrame = addon.configFrame
 
-local L = LibStub("AceLocale-3.0"):GetLocale(ADDON_NAME)
+local L = addon.L or {}
 local IsRetail = WOW_PROJECT_ID == WOW_PROJECT_MAINLINE
 
 local lastObject

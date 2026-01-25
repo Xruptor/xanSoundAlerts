@@ -1,15 +1,17 @@
 --Simple addon that plays a sound if health and or mana is low, based on predefined threshold levels
 
-local ADDON_NAME, addon = ...
+local ADDON_NAME, private = ...
+if type(private) ~= "table" then
+	private = {}
+end
+
 if not _G[ADDON_NAME] then
 	_G[ADDON_NAME] = CreateFrame("Frame", ADDON_NAME, UIParent, BackdropTemplateMixin and "BackdropTemplate")
 end
-addon = _G[ADDON_NAME]
-
-local debugf = tekDebug and tekDebug:GetFrame(ADDON_NAME)
-local function Debug(...)
-    if debugf then debugf:AddMessage(string.join(", ", tostringall(...))) end
-end
+local addon = _G[ADDON_NAME]
+addon.private = private
+addon.L = private.L or addon.L or {}
+local L = addon.L
 
 addon:RegisterEvent("ADDON_LOADED")
 addon:SetScript("OnEvent", function(self, event, ...)
@@ -36,10 +38,30 @@ end)
 local IsRetail = WOW_PROJECT_ID == WOW_PROJECT_MAINLINE
 addon.IsRetail = IsRetail
 
+local function IsSecretValue(value)
+	return type(issecretvalue) == "function" and issecretvalue(value)
+end
+
+local function TryUnwrapSecretValue(value)
+	if not IsSecretValue(value) then
+		return value
+	end
+
+	if type(secretunwrap) == "function" then
+		local ok, unwrapped = pcall(secretunwrap, value)
+		if ok then
+			return unwrapped
+		end
+	end
+
+	return value
+end
+
 local function CanAccessValue(value)
-	if type(issecretvalue) == "function" and issecretvalue(value) then
+	if IsSecretValue(value) then
 		if type(canaccessvalue) == "function" then
-			return canaccessvalue(value)
+			local ok, canAccess = pcall(canaccessvalue, value)
+			return ok and canAccess
 		end
 		return false
 	end
@@ -47,6 +69,7 @@ local function CanAccessValue(value)
 end
 
 local function SafeToNumber(value)
+	value = TryUnwrapSecretValue(value)
 	if not CanAccessValue(value) then
 		return nil
 	end
@@ -71,20 +94,72 @@ local function SafeCallToNumber(fn, ...)
 	return SafeToNumber(value)
 end
 
+local function IsValueBlockedBySecrets(value)
+	if not IsSecretValue(value) then
+		return false
+	end
+	if type(canaccessvalue) == "function" then
+		local ok, canAccess = pcall(canaccessvalue, value)
+		return (not ok) or (not canAccess)
+	end
+	return true
+end
+
+function addon:MaybeWarnAboutSecretValues()
+	if self._warnedSecretValues then
+		return
+	end
+
+	if type(issecretvalue) ~= "function" then
+		return
+	end
+
+	local okH, healthPercent = pcall(UnitHealthPercent or UnitHealth, "player")
+	local okP, mana = pcall(UnitPowerPercent or UnitPower, "player", 0)
+
+	if (okH and IsValueBlockedBySecrets(healthPercent)) or (okP and IsValueBlockedBySecrets(mana)) then
+		self._warnedSecretValues = true
+		if C_Timer and C_Timer.After then
+			C_Timer.After(5, function()
+				DEFAULT_CHAT_FRAME:AddMessage(L.SecretWarn)
+			end)
+		else
+			DEFAULT_CHAT_FRAME:AddMessage(L.SecretWarn)
+		end
+	end
+end
+
 function addon:GetUnitFraction(valueFn, maxFn, ...)
 	local value = SafeCallToNumber(valueFn, ...)
 	local maxValue = SafeCallToNumber(maxFn, ...)
 	if type(value) ~= "number" or type(maxValue) ~= "number" or maxValue <= 0 then
+		if value == nil or maxValue == nil then
+			addon:MaybeWarnAboutSecretValues()
+		end
 		return nil
 	end
 	return value / maxValue
 end
 
 function addon:GetUnitHealthFraction(unit)
+	if type(UnitHealthPercent) == "function" then
+		local healthPercent = SafeCallToNumber(UnitHealthPercent, unit)
+		if healthPercent == nil then
+			addon:MaybeWarnAboutSecretValues()
+		end
+		return healthPercent
+	end
 	return self:GetUnitFraction(UnitHealth, UnitHealthMax, unit)
 end
 
 function addon:GetUnitPowerFraction(unit, powerTypeId)
+	if type(UnitPowerPercent) == "function" then
+		local powerPercent = SafeCallToNumber(UnitPowerPercent, unit, powerTypeId)
+		if powerPercent == nil then
+			addon:MaybeWarnAboutSecretValues()
+		end
+		return powerPercent
+	end
 	return self:GetUnitFraction(UnitPower, UnitPowerMax, unit, powerTypeId)
 end
 
@@ -187,6 +262,7 @@ function addon:EnableAddon()
 	local getMeta = (C_AddOns and C_AddOns.GetAddOnMetadata) or GetAddOnMetadata
 	local ver = (getMeta and getMeta(ADDON_NAME, "Version")) or "1.0"
 	DEFAULT_CHAT_FRAME:AddMessage(string.format("|cFF99CC33%s|r [v|cFF20ff20%s|r] loaded:   /xsa", ADDON_NAME, ver or "1.0"))
+	addon:MaybeWarnAboutSecretValues()
 end
 
 function addon:UNIT_HEALTH()
@@ -258,17 +334,18 @@ function addon:UNIT_POWER_UPDATE(event, unit, powerType)
 	if not XanSA_DB then return end
 	if unit ~= "player" then return end
 
-	if XanSA_DB.allowMana and powerType == "MANA" then
-		local powerTypeId = addon.powerTypes[powerType]
-		local manaPercent = powerTypeId and addon:GetUnitPowerFraction("player", powerTypeId)
+	-- Always check player mana, even if `powerType` is nil or not "MANA".
+	-- Some clients/builds may not reliably pass "MANA" here, but mana can still change.
+	if XanSA_DB.allowMana then
+		local manaPercent = addon:GetUnitPowerFraction("player", 0)
 		if manaPercent and (manaPercent <= lowManaThreshold) then
-			if (not addon.soundAlertSwitch[powerType]) then
+			if (not addon.soundAlertSwitch["MANA"]) then
 				PlaySoundFile("Interface\\AddOns\\xanSoundAlerts\\sounds\\LowMana.ogg", "Master")
-				addon.soundAlertSwitch[powerType] = true
+				addon.soundAlertSwitch["MANA"] = true
 				return
 			end
 		else
-			addon.soundAlertSwitch[powerType] = false
+			addon.soundAlertSwitch["MANA"] = false
 		end
 	end
 

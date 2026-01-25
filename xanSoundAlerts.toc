@@ -4,7 +4,7 @@
 ## Notes-zhCN: 当你的生命值和法力值较低时播放声音。
 ## Notes-zhTW: 當你的生命值和法力值較低時播放聲音。
 ## Author: Xruptor
-## Version: 3.16
+## Version: 3.17
 ## IconTexture: 1769027
 ## X-Curse-Project-ID: 299032
 ## X-WoWI-ID: 24732
@@ -12,10 +12,9 @@
 ## OptionalDeps: tekDebug
 ## SavedVariablesPerCharacter: XanSA_DB
 
-libs\LibStub\LibStub.lua
-libs\AceLocale-3.0\AceLocale-3.0.xml
-
+locale\locales.lua
 locale\enUS.lua
+locale\ruRU.lua
 locale\zhCN.lua
 locale\zhTW.lua
 

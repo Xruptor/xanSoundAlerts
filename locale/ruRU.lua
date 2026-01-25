@@ -1,8 +1,9 @@
-local ADDON_NAME, addon = ...
-
-local L = LibStub("AceLocale-3.0"):NewLocale(ADDON_NAME, "ruRU")
+local ADDON_NAME, private = ...
+local L = private:NewLocale("ruRU")
 if not L then return end
 -- Translator ZamestoTV
+
+L.SecretWarn = "|cFF99CC33xanSoundAlerts|r: !!ВНИМАНИЕ!!\nBlizzard \"секретные значения\" ограничивают доступ к здоровью/ресурсам (Retail/Midnight 12.0+). Когда значения скрыты, звуковые оповещения могут не срабатывать. К сожалению, обходных путей нет!"
 L.ChkBtnHealthOn = "xanSoundAlerts: Звуковые уведомления о здоровье теперь [|cFF99CC33ВКЛ|r]"
 L.ChkBtnHealthOff = "xanSoundAlerts: Звуковые уведомления о здоровье теперь [|cFF99CC33ВЫКЛ|r]"
 L.ChkBtnHealthInfo = "Включить звуковые уведомления о здоровье."
